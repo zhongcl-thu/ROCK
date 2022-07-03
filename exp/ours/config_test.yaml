@@ -1,0 +1,100 @@
+common:
+    method: ours
+
+    net:
+        type: Unet
+        kwargs:
+            #encoder
+            layers: 18
+            blocks: 3
+            pretrained: True
+            use_depth: False
+            merge_depth: input
+
+            #decoder
+            segmentation: False
+    
+    public_params:
+        num_class: 22 # ycb:21 bk_ground:1
+        out_dim: 96
+        inter_obj_dim: 32
+        
+        use_rep: False
+        use_relia_score: True
+
+    workers: 4
+    batch_size: 1
+
+
+augmentation :
+    rgb_norm_mean: [0.45] #[0.485, 0.456, 0.406]
+    rgb_norm_std: [0.225] #[0.229, 0.224, 0.225]
+
+    depth_normalize: constant #variant
+    depth_norm_mean: [0.45]
+    depth_norm_std: [0.225]
+
+data_info:
+    need_read : ['color', 'label', 'obj_pose'] #'depth'
+    model_path : checkpoints/
+    models_to_load: ['encoder', 'decoder']
+
+evaluate:
+    obj_sim_thr: 0.5
+    reliability_thr: 1.5
+    repeatability_thr: 0.7
+    positive_sim_thr: 0.6
+
+test:
+    test_obj_dim: 32
+    set_to_eval: True
+    top_k: 5000
+    save_vis_result: True
+    
+    sim2real_6dpose:
+        videos: [48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59]
+        
+        test_img_root : data/ycb_real
+        test_file_root : core/datasets/split/ycb_real_test/ycb_real_test_{}_list.txt
+        ref_img_root: data/ycb_template
+        ref_model_root: data/ycb_model
+
+        test_img_sacle: 2
+        min_size: 200
+        ref_img_num: 96
+        ref_img_multi_scale: False
+        template_top_num: 5
+        use_gt_box: False
+
+        min_depth: 0
+        max_depth: 2.0
+
+    sim2real_match:
+        videos: [48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59]
+
+        test_img_root : data/ycb_real
+        test_file_root : core/datasets/split/ycb_real_test/ycb_real_test_{}_list.txt
+        ref_img_root: data/ycb_template
+        ref_model_root: data/ycb_model/{}/points.xyz
+        ref_model_path: data/ycb_model/
+
+        valid_num_thr: 500
+        
+        min_depth: 0
+        max_depth: 2.0
+
+        min_depth: 0
+        ransac_select: True
+        ref_img_multi_scale: True
+
+        show_result: False
+
+    match_tracking:
+        videos: [2, 3, 4, 5, 12]
+
+        test_img_root : data/YCBInEOAT
+        test_file_root : core/datasets/split/ycbInEOAT_match_track/{}.txt
+        
+        min_depth: 0
+        ransac_select: False
+        ref_img_multi_scale: True
